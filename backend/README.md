@@ -150,3 +150,103 @@ HTTP/1.1 200 OK
 ```
 
 If your project exposes a `GET /users/me` endpoint that returns the currently authenticated user, use the same Authorization header but call `/users/me` instead of `/users/:id`.
+
+## POST /users/login
+
+Authenticates an existing user and returns a JWT token plus the authenticated user record.
+
+### URL
+
+POST /users/login
+
+### Content type
+
+Content-Type: application/json
+
+### Request body
+
+The endpoint expects a JSON body with the following shape:
+
+{
+  "email": "string (required, must be a valid email)",
+  "password": "string (required, min 6 chars)"
+}
+
+Validation rules enforced by the server (see `backend/routes/user.routes.js`):
+- `email` must be a valid email address.
+- `password` must be at least 6 characters long.
+
+### Example request
+
+```json
+POST /users/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "s3cr3t123"
+}
+```
+
+### Successful response
+
+- Status: 200 OK
+- Body: JSON object containing `token` and the authenticated `user`.
+
+Example:
+
+```json
+HTTP/1.1 200 OK
+{
+  "token": "<jwt-token-string>",
+  "user": {
+    "_id": "64a1f7...",
+    "fullname": {
+      "firstname": "Alice",
+      "lastname": "Smith"
+    },
+    "email": "alice@example.com",
+    "socketId": null
+  }
+}
+```
+
+Note: The `password` field should NOT be included in the response. The login implementation needs to fetch the hashed password to compare credentials (for example with `.select('+password')`) but must remove or hide the password before returning the user object to the client (e.g., `user.password = undefined` or by using a safe serializer).
+
+### Client / validation errors
+
+- Status: 400 Bad Request
+- Cause: validation errors (invalid email format, password too short, missing fields).
+- Body format matches the `express-validator` errors array as in the register endpoint.
+
+### Authentication errors
+
+- Status: 401 Unauthorized
+- Cause: invalid credentials (email not found or password mismatch).
+- Example response:
+
+```json
+HTTP/1.1 401 Unauthorized
+{
+  "message": "Invalid email or password"
+}
+```
+
+### Server errors
+
+- Status: 500 Internal Server Error
+- Cause: unexpected errors (database failures, etc.)
+
+### Notes / Implementation details
+
+- The `loginUser` controller fetches the user by email and selects the password to compare it using the model's `comparePassword` method.
+- After a successful login, a JWT is generated via `generateAuthToken()` on the user model.
+- Always ensure the password is removed from the returned user object to avoid leaking sensitive data.
+
+### Quick curl example
+
+```bash
+curl -X POST http://localhost:3000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com","password":"s3cr3t123"}'
+```
