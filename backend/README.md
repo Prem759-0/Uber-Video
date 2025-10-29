@@ -250,3 +250,86 @@ curl -X POST http://localhost:3000/users/login \
   -H "Content-Type: application/json" \
   -d '{"email":"alice@example.com","password":"s3cr3t123"}'
 ```
+
+## GET /users/profile
+
+Returns the profile of the currently authenticated user. This route is protected by the `authUser` middleware and requires either a valid `token` cookie or an `Authorization: Bearer <token>` header.
+
+### URL
+
+GET /users/profile
+
+### Headers / Cookies
+
+- Cookie: `token=<jwt-token>` OR
+- Header: `Authorization: Bearer <jwt-token>`
+
+### Successful response
+
+- Status: 200 OK
+- Body: JSON object with the authenticated user's public fields (password excluded).
+
+Example response:
+
+```json
+HTTP/1.1 200 OK
+{
+  "_id": "64a1f7...",
+  "fullname": {
+    "firstname": "Alice",
+    "lastname": "Smith"
+  },
+  "email": "alice@example.com",
+  "socketId": null
+}
+```
+
+### Authentication errors
+
+- Status: 401 Unauthorized
+- Cause: missing or invalid token, or token blacklisted during logout. Example response:
+
+```json
+HTTP/1.1 401 Unauthorized
+{
+  "message": "Unauthorized"
+}
+```
+
+### Notes
+
+- This endpoint uses `auth.middleware.authUser` to validate the JWT and attach the user document to `req.user`.
+- Because the middleware searches for blacklisted tokens, a token that was logged out will be rejected.
+
+## GET /users/logout
+
+Logs out the authenticated user by clearing the `token` cookie and adding the token to a blacklist (so it can't be reused).
+
+### URL
+
+GET /users/logout
+
+### Headers / Cookies
+
+- Cookie: `token=<jwt-token>` OR
+- Header: `Authorization: Bearer <jwt-token>`
+
+### Successful response
+
+- Status: 200 OK
+- Body: JSON object with a message indicating the user has been logged out.
+
+Example response:
+
+```json
+HTTP/1.1 200 OK
+{
+  "message": "Logged out"
+}
+```
+
+### Notes
+
+- The `logoutUser` controller clears the `token` cookie and stores the token in a blacklist collection (`blacklistTokenModel`) to prevent reuse.
+- Clients should also remove any stored tokens on their side (localStorage/sessionStorage) after receiving this response.
+
