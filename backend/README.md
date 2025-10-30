@@ -82,9 +82,6 @@ Note: The `user` object returned comes from the Mongoose model. The `password` f
   "errors": [
     {
       "msg": "Invalid email address",
-      "param": "email",
-      "location": "body"
-    },
     {
       "msg": "First name must be at least 3 characters long",
       "param": "fullname.firstname",
@@ -104,8 +101,6 @@ Example generic error response:
 ```json
 HTTP/1.1 500 Internal Server Error
 {
-  "error": "Internal server error"
-}
 ```
 
 ### Notes / Implementation details
@@ -129,9 +124,6 @@ After successful registration you receive a JWT in the response. You can use tha
 Example curl (replace <jwt-token> and <user-id> with real values):
 
 ```bash
-curl -X GET http://localhost:3000/users/<user-id> \
-  -H "Authorization: Bearer <jwt-token>" \
-  -H "Content-Type: application/json"
 ```
 
 Example successful response:
@@ -153,8 +145,6 @@ If your project exposes a `GET /users/me` endpoint that returns the currently au
 
 ## POST /users/login
 
-Authenticates an existing user and returns a JWT token plus the authenticated user record.
-
 ### URL
 
 POST /users/login
@@ -166,9 +156,6 @@ Content-Type: application/json
 ### Request body
 
 The endpoint expects a JSON body with the following shape:
-
-{
-  "email": "string (required, must be a valid email)",
   "password": "string (required, min 6 chars)"
 }
 
@@ -238,13 +225,6 @@ HTTP/1.1 401 Unauthorized
 - Cause: unexpected errors (database failures, etc.)
 
 ### Notes / Implementation details
-
-- The `loginUser` controller fetches the user by email and selects the password to compare it using the model's `comparePassword` method.
-- After a successful login, a JWT is generated via `generateAuthToken()` on the user model.
-- Always ensure the password is removed from the returned user object to avoid leaking sensitive data.
-
-### Quick curl example
-
 ```bash
 curl -X POST http://localhost:3000/users/login \
   -H "Content-Type: application/json" \
@@ -270,8 +250,6 @@ GET /users/profile
 - Body: JSON object with the authenticated user's public fields (password excluded).
 
 Example response:
-
-```json
 HTTP/1.1 200 OK
 {
   "_id": "64a1f7...",
@@ -295,9 +273,6 @@ HTTP/1.1 401 Unauthorized
   "message": "Unauthorized"
 }
 ```
-
-### Notes
-
 - This endpoint uses `auth.middleware.authUser` to validate the JWT and attach the user document to `req.user`.
 - Because the middleware searches for blacklisted tokens, a token that was logged out will be rejected.
 
@@ -312,13 +287,9 @@ GET /users/logout
 ### Headers / Cookies
 
 - Cookie: `token=<jwt-token>` OR
-- Header: `Authorization: Bearer <jwt-token>`
-
 ### Successful response
 
 - Status: 200 OK
-- Body: JSON object with a message indicating the user has been logged out.
-
 Example response:
 
 ```json
