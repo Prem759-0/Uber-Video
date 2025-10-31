@@ -304,3 +304,95 @@ HTTP/1.1 200 OK
 - The `logoutUser` controller clears the `token` cookie and stores the token in a blacklist collection (`blacklistTokenModel`) to prevent reuse.
 - Clients should also remove any stored tokens on their side (localStorage/sessionStorage) after receiving this response.
 
+## Captain API (base: `/captains`)
+
+Compact reference for Captain routes. Send JSON with `Content-Type: application/json`.
+
+### POST `/captains/register`
+Registers a new captain and vehicle.
+
+```jsonc
+// Request body
+{
+  "fullname": {
+    "firstname": "Bob",          // required, string, min 3 chars
+    "lastname": "Driver"         // optional, string
+  },
+  "email": "bob@example.com",    // required, valid email (lowercased/trimmed by server)
+  "password": "captain123",      // required, string, min 6 chars
+  "vehicle": {
+    "color": "Red",             // required, string, min 3 chars
+    "plate": "XYZ123",          // required, string, min 3 chars
+    "capacity": 4,               // required, integer >= 1
+    "vehicleType": "car"        // required, one of: "car" | "motorcycle" | "auto"
+  }
+}
+
+// 201 Created
+{
+  "token": "<jwt-token>",
+  "captain": { /* created captain object (password excluded) */ }
+}
+
+// 400 Bad Request (validation failures)
+{
+  "message": "Invalid input",
+  "errors": [
+    { "msg": "Invalid Email", "param": "email" },
+    { "msg": "First name must be at least 3 characters long", "param": "fullname.firstname" },
+    { "msg": "Capacity must be at least 1", "param": "vehicle.capacity" }
+  ]
+}
+
+// 400 Bad Request (duplicate)
+{ "message": "Captain already exist" }
+```
+
+### POST `/captains/login`
+Authenticates a captain and returns a token. Email is normalized server-side.
+
+```jsonc
+// Request body
+{
+  "email": "bob@example.com",   // required, valid email
+  "password": "captain123"      // required, min 6 chars
+}
+
+// 200 OK
+{
+  "token": "<jwt-token>",
+  "captain": { /* authenticated captain (password excluded) */ }
+}
+
+// 400 Bad Request (validation failures)
+{ "errors": [ /* express-validator array */ ] }
+
+// 401 Unauthorized (bad credentials)
+{ "message": "Invalid email or password" }
+```
+
+### GET `/captains/profile`
+Returns the authenticated captain.
+
+Auth options:
+- Cookie: `token=<jwt-token>` set by server on login
+- Header: `Authorization: Bearer <jwt-token>`
+
+```jsonc
+// 200 OK
+{ "captain": { /* captain object */ } }
+
+// 401 Unauthorized (missing/invalid/blacklisted token)
+{ "message": "Unauthorized" }
+```
+
+### GET `/captains/logout`
+Blacklists the current token and clears the cookie.
+
+Auth required (same as profile).
+
+```jsonc
+// 200 OK
+{ "message": "Logout successfully" }
+```
+
