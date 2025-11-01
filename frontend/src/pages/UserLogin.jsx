@@ -5,10 +5,16 @@ import { Link } from 'react-router-dom';
 const UserLogin = () => {
    const [email, setEmail] = useState('')
    const [password, setPassword] = useState('')
+   const [userData, setUserData] = useState({})
 
    const submitHandler = (e)=>{
     e.preventDefault();
-      console.log(email, password);
+      setUserData({
+        email:email,
+        password:password
+      })
+      setEmail('')
+      setPassword('')
    }
 
   return (
@@ -53,11 +59,12 @@ const UserLogin = () => {
      </div>
 
      <div>
-      <button
-         className='bg-[#10b461] text-white font-semibold mb-7 rounded-xl px-4 py-2  w-full text-lg placeholder:text-base'
+      <Link
+      to='/captain-login'
+         className='bg-[#10b461] flex items-center justify-center text-white font-semibold mb-7 rounded-xl px-4 py-2  w-full text-lg placeholder:text-base'
       >
         Sign in as Captain
-      </button>
+      </Link>
      </div>
     </div>
   )
