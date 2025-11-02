@@ -1,18 +1,42 @@
 import React, { useState } from 'react'
+
 import logo from '../assets/logo.png';
+import {UserDataContext} from '../context/UserContext';
+import axios from 'axios';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 const UserLogin = () => {
    const [email, setEmail] = useState('')
    const [password, setPassword] = useState('')
    const [userData, setUserData] = useState({})
+   const [passwordError, setPasswordError] = useState('')
 
-   const submitHandler = (e)=>{
+   const navigate = useNavigate()
+
+   const [user, setUser] = React.useContext(UserDataContext)
+
+
+   const submitHandler = async (e)=>{
     e.preventDefault();
-      setUserData({
+
+      const userData = {
         email:email,
         password:password
-      })
+      }
+
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`,userData)
+
+      
+      if(response.status === 200){
+        const data = response.data
+
+        setUser(data.user)
+        localStorage.setItem('token', data.token)
+        navigate('/home')
+       }
+
+
       setEmail('')
       setPassword('')
    }
@@ -43,12 +67,20 @@ const UserLogin = () => {
       required 
        value={password}
        onChange={(e)=>{
-        setPassword(e.target.value)
+        const value = e.target.value
+        setPassword(value)
+        if (value.length > 0 && value.length < 6) {
+          setPasswordError('Password must be at least 6 characters')
+        } else {
+          setPasswordError('')
+        }
        }}
-      className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base'
+      className={`bg-[#eeeeee] mb-1 rounded px-4 py-2 border w-full text-lg placeholder:text-base ${passwordError ? 'border-red-500' : ''}`}
       type='password' 
       placeholder='password' 
       />
+      {passwordError && <p className='text-red-500 text-sm mb-6'>{passwordError}</p>}
+      {!passwordError && <div className='mb-7'></div>}
 
       <button 
       className='bg-[#111] text-white font-semibold mb-3 rounded-xl px-4 py-2  w-full text-lg placeholder:text-base'

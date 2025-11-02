@@ -1,6 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState  } from 'react'
 
 import logo from '../assets/logo.png';
+import {UserDataContext} from '../context/UserContext';
+import axios from 'axios';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 const UserSignup = () => {
@@ -9,18 +12,34 @@ const UserSignup = () => {
      const [firstName, setFirstName] = useState('')
      const [lastName, setLastName] = useState('')
      const [userData, setUserData] = useState('')
+     const [passwordError, setPasswordError] = useState('')
+
+     const navigate = useNavigate()
+
+     const [user, setUser] = React.useContext(UserDataContext)
 
   
-     const submitHandler = (e)=>{
+     const submitHandler = async (e)=>{
       e.preventDefault();
-        setUserData({
-          fullName:{
-            firstName:firstName,
-            lastName:lastName
-          },
-          email:email,
-          password:password
-      })
+       const newUser = {
+        fullname:{
+              firstname:firstName,
+              lastname:lastName
+            },
+            email:email,
+            password:password
+       }
+        
+  const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
+
+       if(response.status === 201){
+        const data = response.data
+
+        setUser(data.user)
+          localStorage.setItem('token', data.token)
+        navigate('/home')
+       }
+
         setEmail('')
         setPassword('')
         setFirstName('')
@@ -79,16 +98,24 @@ const UserSignup = () => {
       required
       value={password}
                     onChange={(e)=>{
-                      setPassword(e.target.value)
+                      const value = e.target.value
+                      setPassword(value)
+                      if (value.length > 0 && value.length < 6) {
+                        setPasswordError('Password must be at least 6 characters')
+                      } else {
+                        setPasswordError('')
+                      }
                     }}   
-      className='bg-[#eeeeee] mb-6 rounded px-4 py-2 border w-full text-lg placeholder:text-base'
+      className={`bg-[#eeeeee] mb-1 rounded px-4 py-2 border w-full text-lg placeholder:text-base ${passwordError ? 'border-red-500' : ''}`}
       type='password' 
       placeholder='password' 
       />
+      {passwordError && <p className='text-red-500 text-sm mb-5'>{passwordError}</p>}
+      {!passwordError && <div className='mb-6'></div>}
 
       <button 
       className='bg-[#111] text-white font-semibold mb-3 rounded-xl px-4 py-2  w-full text-lg placeholder:text-base'
-      >Login</button>
+      >Create account</button>
 
      <p className='text-center font-semibold'>Already have a account?<Link to='/login' className='text-blue-600'>Login here</Link></p> 
     </form>

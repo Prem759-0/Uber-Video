@@ -5,10 +5,8 @@ const {validationResult} = require('express-validator');
 
 module.exports.registerCaptain = async (req, res, next) => {
       try {
-        console.log('Request body:', JSON.stringify(req.body, null, 2));
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-          console.log('Validation errors:', errors.array());
           return res.status(400).json({message: "Invalid input", errors: errors.array()});
         }
 

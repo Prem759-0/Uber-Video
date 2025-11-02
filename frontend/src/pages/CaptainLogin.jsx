@@ -1,23 +1,42 @@
 import React, { useState } from 'react'
-
-import uber_drive from '../assets/uber-driver.svg';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { CaptainDataContext } from "../context/CaptainContext"
+import uber_drive from "../assets/uber-driver.svg"
 
 const CaptainLogin = () => {
 
-   const [email, setEmail] = useState('')
-     const [password, setPassword] = useState('')
-     const [captainData, setCaptainData] = useState('')
-  
-     const submitHandler = (e)=>{
-      e.preventDefault();
-        setCaptainData({
-          email:email,
-          password
-        })
-        setEmail('')
-        setPassword('')
-     }
+  const [ email, setEmail ] = useState('')
+  const [ password, setPassword ] = useState('')
+  const [ passwordError, setPasswordError ] = useState('')
+
+  const { captain, setCaptain } = React.useContext(CaptainDataContext)
+  const navigate = useNavigate()
+
+
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    const captain = {
+      email: email,
+      password
+    }
+
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captain)
+
+    if (response.status === 200) {
+      const data = response.data
+
+      setCaptain(data.captain)
+      localStorage.setItem('token', data.token)
+      navigate('/captain-home')
+
+    }
+
+    setEmail('')
+    setPassword('')
+  }
   
   return (
   <div className='p-7 h-screen flex flex-col justify-between'>
@@ -45,12 +64,20 @@ const CaptainLogin = () => {
       required 
        value={password}
        onChange={(e)=>{
-        setPassword(e.target.value)
+        const value = e.target.value
+        setPassword(value)
+        if (value.length > 0 && value.length < 6) {
+          setPasswordError('Password must be at least 6 characters')
+        } else {
+          setPasswordError('')
+        }
        }}
-      className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base'
+      className={`bg-[#eeeeee] mb-1 rounded px-4 py-2 border w-full text-lg placeholder:text-base ${passwordError ? 'border-red-500' : ''}`}
       type='password' 
       placeholder='password' 
       />
+      {passwordError && <p className='text-red-500 text-sm mb-6'>{passwordError}</p>}
+      {!passwordError && <div className='mb-7'></div>}
 
       <button 
       className='bg-[#111] text-white font-semibold mb-3 rounded-xl px-4 py-2  w-full text-lg placeholder:text-base'
