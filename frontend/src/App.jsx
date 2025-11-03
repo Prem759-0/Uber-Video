@@ -7,7 +7,7 @@ import CaptainSignup from './pages/CaptainSignup.jsx'
 import CaptainLogin from './pages/CaptainLogin.jsx'
 import Home from './pages/Home.jsx'
 import UserProtectWrapper from './pages/UserProtectWrapper.jsx'
-import { UserLogout } from './pages/UserLogout.jsx'
+import UserLogout from './pages/UserLogout.jsx'   // ✅ fixed
 import CaptainHome from './pages/CaptainHome.jsx'
 import CaptainProtectWrapper from './pages/CaptainProtectWrapper.jsx'
 

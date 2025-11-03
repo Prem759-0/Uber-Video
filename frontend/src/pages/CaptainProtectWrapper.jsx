@@ -35,7 +35,7 @@ const CaptainProtectWrapper = ({ children }) => {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-gray-300 bg-black rounded-full animate-spin mb-4"></div>
                     <p className="text-lg font-medium text-gray-700">Loading Captain Profile...</p>
                 </div>
             </div>

@@ -28,4 +28,6 @@ export  const UserLogout = () => {
     </div>
   )
 }
+
+export default UserLogout
  
