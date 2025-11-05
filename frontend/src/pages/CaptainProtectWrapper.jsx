@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { CaptainDataContext } from "../context/CaptainContext"
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import '../components/Loader.css' // Import the CSS file for the loader
 
 const CaptainProtectWrapper = ({ children }) => {
 
@@ -33,11 +34,13 @@ const CaptainProtectWrapper = ({ children }) => {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 border-4 border-gray-300 bg-black rounded-full animate-spin mb-4"></div>
-                    <p className="text-lg font-medium text-gray-700">Loading Captain Profile...</p>
+            <div className="loader-overlay">
+                <div className="loader-container">
+                    <div className="dot dot-1"></div>
+                    <div className="dot dot-2"></div>
+                    <div className="dot dot-3"></div>
                 </div>
+                <p className="text-lg font-medium text-white mt-4">Loading Captain Profile...</p>
             </div>
         )
     }
